@@ -35,6 +35,7 @@ const logoutButtons = document.querySelectorAll(".js-logout");
 let housesCache = [];
 let editingHouseId = null;
 let rowMenuListenerBound = false;
+let currentUsername = null;
 
 function setStatus(element, message, tone) {
   if (!element) return;
@@ -63,6 +64,18 @@ function ensureAuthenticated() {
     return null;
   }
   return user;
+}
+
+function normalizeUsername(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function canUserSeeHouseAlerts(house, username) {
+  const owner = normalizeUsername(house?.owner_name);
+  const user = normalizeUsername(username);
+
+  if (!owner || !user) return false;
+  return owner === "ambos" || owner === user;
 }
 
 function isoWeekday(date) {
@@ -106,7 +119,7 @@ function notifyOncePerDay(key, title, body) {
   localStorage.setItem(storageKey, "1");
 }
 
-function buildAlertData(houses) {
+function buildAlertData(houses, username) {
   const today = new Date();
   const todayIso = isoWeekday(today);
   const todaysAlerts = [];
@@ -114,6 +127,7 @@ function buildAlertData(houses) {
 
   houses.forEach((house) => {
     if (!house.is_active || !house.reminder_enabled) return;
+    if (!canUserSeeHouseAlerts(house, username)) return;
 
     const depositDay = Number(house.deposit_weekday);
     const bonusDay = Number(house.bonus_weekday);
@@ -500,7 +514,7 @@ async function refreshData() {
   housesCache = houses;
   renderHousesTable(houses);
 
-  const { todaysAlerts, upcomingRows } = buildAlertData(houses);
+  const { todaysAlerts, upcomingRows } = buildAlertData(houses, currentUsername);
   renderTodayAlerts(todaysAlerts);
   renderUpcomingAlerts(upcomingRows);
 }
@@ -619,6 +633,7 @@ async function enableBrowserNotifications() {
 async function init() {
   const user = ensureAuthenticated();
   if (!user) return;
+  currentUsername = normalizeUsername(user.username);
 
   userLabels.forEach((labelEl) => {
     labelEl.textContent = `Sessao ativa: ${user.username}`;
