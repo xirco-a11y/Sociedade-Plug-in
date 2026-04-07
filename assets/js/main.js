@@ -42,7 +42,15 @@ async function handleLogin(event) {
     }
 
     updateStatus(`Bem-vindo, ${payload.username}.`, "success");
+    localStorage.setItem(
+      "sociedade_user",
+      JSON.stringify({
+        userId: payload.userId,
+        username: payload.username
+      })
+    );
     loginForm.reset();
+    window.location.href = "/app";
   } catch (error) {
     console.error("Erro de login:", error);
     updateStatus(error.message || "Nao foi possivel entrar.", "error");

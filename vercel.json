@@ -3,6 +3,14 @@
     {
       "source": "/",
       "destination": "/pages/index.html"
+    },
+    {
+      "source": "/app",
+      "destination": "/pages/app.html"
+    },
+    {
+      "source": "/condicoes",
+      "destination": "/pages/condicoes.html"
     }
   ]
 }
