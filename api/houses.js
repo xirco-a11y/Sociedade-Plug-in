@@ -27,6 +27,21 @@ function getJwtRole(jwt) {
   }
 }
 
+function isClearlyNotServiceRoleKey(key) {
+  const raw = String(key || "").trim();
+  const jwtRole = getJwtRole(raw);
+
+  if (jwtRole && jwtRole !== "service_role") {
+    return true;
+  }
+
+  if (raw.startsWith("sb_publishable_")) {
+    return true;
+  }
+
+  return false;
+}
+
 function jsonHeaders(serviceKey) {
   return {
     "Content-Type": "application/json",
@@ -120,11 +135,10 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const keyRole = getJwtRole(SUPABASE_SERVICE_ROLE_KEY);
-  if (keyRole !== "service_role") {
+  if (isClearlyNotServiceRoleKey(SUPABASE_SERVICE_ROLE_KEY)) {
     res.status(500).json({
       error:
-        "SUPABASE_SERVICE_ROLE_KEY invalida. A chave atual nao e service_role (parece anon)."
+        "SUPABASE_SERVICE_ROLE_KEY invalida. A chave atual parece anon/publishable e nao service role."
     });
     return;
   }
