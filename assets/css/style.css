@@ -71,3 +71,17 @@ button:hover {
 button:active {
   transform: translateY(1px);
 }
+
+.status {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.status[data-state="success"] {
+  color: #136f43;
+}
+
+.status[data-state="error"] {
+  color: #b42318;
+}
