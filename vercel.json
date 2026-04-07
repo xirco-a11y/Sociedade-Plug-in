@@ -9,6 +9,18 @@
       "destination": "/pages/app.html"
     },
     {
+      "source": "/configuracoes",
+      "destination": "/pages/configuracoes.html"
+    },
+    {
+      "source": "/avisos-hoje",
+      "destination": "/pages/avisos-hoje.html"
+    },
+    {
+      "source": "/proximos-alertas",
+      "destination": "/pages/proximos-alertas.html"
+    },
+    {
       "source": "/condicoes",
       "destination": "/pages/condicoes.html"
     }

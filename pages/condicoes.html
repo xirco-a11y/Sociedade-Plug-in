@@ -7,16 +7,24 @@
   <link rel="stylesheet" href="../assets/css/app.css">
 </head>
 <body>
-  <div class="layout condicoes">
-    <header class="topbar">
+  <div class="shell condicoes">
+    <header class="topbar glass">
       <div>
         <h1>Tabela de Bonus e Apostas</h1>
-        <p>Regras e valores da sociedade</p>
+        <p data-user-label>Regras e valores da sociedade</p>
       </div>
       <div class="topbar-actions">
-        <a class="button-link secondary" href="/app">Voltar ao Painel</a>
+        <button class="button danger js-logout" type="button">Sair</button>
       </div>
     </header>
+
+    <nav class="subnav">
+      <a class="subnav-link" href="/app">Painel</a>
+      <a class="subnav-link" href="/configuracoes">Configuracoes</a>
+      <a class="subnav-link" href="/avisos-hoje">Avisos de Hoje</a>
+      <a class="subnav-link" href="/proximos-alertas">Proximos Alertas</a>
+      <a class="subnav-link active" href="/condicoes">Condicoes</a>
+    </nav>
 
     <article class="card">
       <h2>Datas</h2>
@@ -56,7 +64,16 @@
         </table>
       </div>
 
-      <h2>Condicoes</h2>
+      <div class="title-row">
+        <span class="title-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 8H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M4 12H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M4 16H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <h2>Condicoes</h2>
+      </div>
       <h3>Odd minima individual de 1.55 - x6</h3>
 
       <p><strong>Betonblack 1</strong></p>
@@ -213,17 +230,6 @@
     </article>
   </div>
 
-  <script>
-    (function () {
-      try {
-        const user = JSON.parse(localStorage.getItem("sociedade_user") || "null");
-        if (!user || !user.username) {
-          window.location.href = "/";
-        }
-      } catch {
-        window.location.href = "/";
-      }
-    })();
-  </script>
+  <script src="../assets/js/app.js"></script>
 </body>
 </html>

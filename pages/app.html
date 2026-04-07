@@ -3,127 +3,49 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sociedade Plug In - Gestao</title>
+  <title>Sociedade Plug In - Painel</title>
   <link rel="stylesheet" href="../assets/css/app.css">
 </head>
 <body>
-  <div class="layout">
-    <header class="topbar">
+  <div class="shell">
+    <header class="topbar glass">
       <div>
         <h1>Sociedade Plug In</h1>
-        <p id="welcome-text">Painel de casas e avisos</p>
+        <p data-user-label>Painel principal</p>
       </div>
       <div class="topbar-actions">
-        <a class="button-link secondary" href="/condicoes">Condicoes</a>
-        <button id="enable-notifications" type="button">Ativar Avisos</button>
-        <button id="logout-button" class="danger" type="button">Sair</button>
+        <button class="button danger js-logout" type="button">Sair</button>
       </div>
     </header>
 
-    <section class="grid two">
-      <article class="card">
-        <h2 class="section-title">Avisos de Hoje</h2>
-        <p class="muted">A app avisa no dia anterior para verificar e no dia do bonus para depositar.</p>
-        <ul id="today-alerts" class="pill-list"></ul>
-        <p id="alerts-status" class="status muted"></p>
-      </article>
+    <nav class="subnav">
+      <a class="subnav-link active" href="/app">Painel</a>
+      <a class="subnav-link" href="/configuracoes">Configuracoes</a>
+      <a class="subnav-link" href="/avisos-hoje">Avisos de Hoje</a>
+      <a class="subnav-link" href="/proximos-alertas">Proximos Alertas</a>
+      <a class="subnav-link" href="/condicoes">Condicoes</a>
+    </nav>
 
-      <article class="card">
-        <h2 class="section-title">Proximos Alertas</h2>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Casa</th>
-                <th>Verificar</th>
-                <th>Bonus</th>
-              </tr>
-            </thead>
-            <tbody id="upcoming-alerts-body"></tbody>
-          </table>
-        </div>
-      </article>
-    </section>
+    <section class="menu-grid">
+      <a class="menu-card" href="/configuracoes">
+        <h3>Configuracoes</h3>
+        <p>Adicionar casas novas, definir responsavel, dia do bonus e regras.</p>
+      </a>
 
-    <section class="grid two" style="margin-top: 1rem;">
-      <article class="card">
-        <h2 class="section-title">Casas de Apostas</h2>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Casa</th>
-                <th>Responsavel</th>
-                <th>Deposito</th>
-                <th>Bonus</th>
-                <th>Ativa</th>
-              </tr>
-            </thead>
-            <tbody id="houses-body"></tbody>
-          </table>
-        </div>
-      </article>
+      <a class="menu-card" href="/avisos-hoje">
+        <h3>Avisos de Hoje</h3>
+        <p>Ver alertas ativos para hoje e ativar notificacoes no browser.</p>
+      </a>
 
-      <article class="card">
-        <h2 class="section-title">Definicoes</h2>
-        <p class="muted">Adicionar nova casa e regras de aviso.</p>
-        <form id="house-form" class="grid-form" novalidate>
-          <label>
-            Nome da casa
-            <input name="name" type="text" placeholder="ex: betano" required>
-          </label>
-          <label>
-            Responsavel
-            <select name="ownerName" required>
-              <option value="goncalo">goncalo</option>
-              <option value="xico">xico</option>
-              <option value="ambos">ambos</option>
-            </select>
-          </label>
-          <label>
-            Dia do deposito
-            <select name="depositWeekday" required>
-              <option value="1">segunda</option>
-              <option value="2">terca</option>
-              <option value="3">quarta</option>
-              <option value="4">quinta</option>
-              <option value="5">sexta</option>
-              <option value="6">sabado</option>
-              <option value="7">domingo</option>
-            </select>
-          </label>
-          <label>
-            Limite deposito
-            <input name="depositDeadline" type="time" value="23:59" required>
-          </label>
-          <label>
-            Dia do bonus
-            <select name="bonusWeekday" required>
-              <option value="1">segunda</option>
-              <option value="2">terca</option>
-              <option value="3">quarta</option>
-              <option value="4">quinta</option>
-              <option value="5">sexta</option>
-              <option value="6">sabado</option>
-              <option value="7">domingo</option>
-            </select>
-          </label>
-          <label>
-            Data bonus (texto)
-            <input name="bonusLabel" type="text" placeholder="ex: sexta ate as 23h59">
-          </label>
-          <label class="full">
-            Notas
-            <textarea name="notes" placeholder="observacoes desta casa"></textarea>
-          </label>
-          <label class="checkbox full">
-            <input name="reminderEnabled" type="checkbox" checked>
-            Ativar avisos desta casa
-          </label>
-          <button class="full" id="save-house-button" type="submit">Guardar Casa</button>
-        </form>
-        <p id="house-form-status" class="status muted"></p>
-      </article>
+      <a class="menu-card" href="/proximos-alertas">
+        <h3>Proximos Alertas</h3>
+        <p>Planeamento da semana por casa com datas de verificacao e bonus.</p>
+      </a>
+
+      <a class="menu-card" href="/condicoes">
+        <h3>Condicoes</h3>
+        <p>Tabelas de bonus, odds, valores e regras da sociedade.</p>
+      </a>
     </section>
   </div>
 

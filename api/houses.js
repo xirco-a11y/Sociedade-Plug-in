@@ -30,16 +30,31 @@ function getJwtRole(jwt) {
 function isClearlyNotServiceRoleKey(key) {
   const raw = String(key || "").trim();
   const jwtRole = getJwtRole(raw);
-
-  if (jwtRole && jwtRole !== "service_role") {
-    return true;
-  }
-
-  if (raw.startsWith("sb_publishable_")) {
-    return true;
-  }
-
+  if (jwtRole && jwtRole !== "service_role") return true;
+  if (raw.startsWith("sb_publishable_")) return true;
   return false;
+}
+
+function toBoolean(value, defaultValue = false) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    return normalized === "true" || normalized === "1" || normalized === "on" || normalized === "yes";
+  }
+  return defaultValue;
+}
+
+function firstValue(value) {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
+function parseHouseId(req, body) {
+  const queryId = firstValue(req?.query?.id);
+  const raw = String(queryId || body?.id || "").trim();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(raw);
+  return isUuid ? raw : null;
 }
 
 function jsonHeaders(serviceKey) {
@@ -50,6 +65,14 @@ function jsonHeaders(serviceKey) {
   };
 }
 
+function pickErrorMessage(payload, fallback) {
+  if (!payload) return fallback;
+  if (typeof payload === "string") return payload;
+  if (payload.message) return payload.message;
+  if (payload.error) return payload.error;
+  return fallback;
+}
+
 function normalizeHousePayload(body) {
   return {
     name: String(body.name || "").trim().toLowerCase(),
@@ -58,9 +81,9 @@ function normalizeHousePayload(body) {
     deposit_deadline: String(body.depositDeadline || "23:59").trim(),
     bonus_weekday: Number(body.bonusWeekday),
     bonus_label: String(body.bonusLabel || "").trim(),
-    reminder_enabled: Boolean(body.reminderEnabled),
+    reminder_enabled: toBoolean(body.reminderEnabled, true),
     notes: String(body.notes || "").trim(),
-    is_active: true
+    is_active: toBoolean(body.isActive, true)
   };
 }
 
@@ -97,9 +120,9 @@ async function listHouses(baseUrl, serviceKey) {
 
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
-    const message = payload?.message || payload?.error || "Erro ao listar casas.";
-    throw new Error(message);
+    throw new Error(pickErrorMessage(payload, "Erro ao listar casas."));
   }
+
   return Array.isArray(payload) ? payload : [];
 }
 
@@ -115,15 +138,54 @@ async function insertHouse(baseUrl, serviceKey, housePayload) {
 
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
-    const message = payload?.message || payload?.error || "Erro ao inserir casa.";
-    throw new Error(message);
+    throw new Error(pickErrorMessage(payload, "Erro ao inserir casa."));
   }
-
   if (!Array.isArray(payload) || payload.length === 0) {
     throw new Error("Nao foi devolvido registo apos inserir casa.");
   }
 
   return payload[0];
+}
+
+async function updateHouse(baseUrl, serviceKey, houseId, housePayload) {
+  const response = await fetch(`${baseUrl}/rest/v1/bet_houses?id=eq.${encodeURIComponent(houseId)}`, {
+    method: "PATCH",
+    headers: {
+      ...jsonHeaders(serviceKey),
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify(housePayload)
+  });
+
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(pickErrorMessage(payload, "Erro ao atualizar casa."));
+  }
+  if (!Array.isArray(payload) || payload.length === 0) {
+    throw new Error("Casa nao encontrada para atualizar.");
+  }
+
+  return payload[0];
+}
+
+async function removeHouse(baseUrl, serviceKey, houseId) {
+  const response = await fetch(`${baseUrl}/rest/v1/bet_houses?id=eq.${encodeURIComponent(houseId)}`, {
+    method: "DELETE",
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      Accept: "application/json",
+      Prefer: "return=representation"
+    }
+  });
+
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(pickErrorMessage(payload, "Erro ao remover casa."));
+  }
+
+  const deleted = Array.isArray(payload) && payload.length > 0;
+  return { deleted, house: deleted ? payload[0] : null };
 }
 
 module.exports = async (req, res) => {
@@ -161,6 +223,43 @@ module.exports = async (req, res) => {
 
       const created = await insertHouse(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, house);
       res.status(201).json({ house: created });
+      return;
+    }
+
+    if (req.method === "PUT") {
+      const body = parseBody(req.body);
+      const houseId = parseHouseId(req, body);
+      if (!houseId) {
+        res.status(400).json({ error: "ID da casa invalido." });
+        return;
+      }
+
+      const house = normalizeHousePayload(body);
+      const validationError = validateHouse(house);
+      if (validationError) {
+        res.status(400).json({ error: validationError });
+        return;
+      }
+
+      const updated = await updateHouse(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, houseId, house);
+      res.status(200).json({ house: updated });
+      return;
+    }
+
+    if (req.method === "DELETE") {
+      const houseId = parseHouseId(req, {});
+      if (!houseId) {
+        res.status(400).json({ error: "ID da casa invalido." });
+        return;
+      }
+
+      const result = await removeHouse(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, houseId);
+      if (!result.deleted) {
+        res.status(404).json({ error: "Casa nao encontrada para remover." });
+        return;
+      }
+
+      res.status(200).json({ deleted: true, house: result.house });
       return;
     }
 

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sociedade Plug In - Avisos de Hoje</title>
+  <link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar glass">
+      <div>
+        <h1>Avisos de Hoje</h1>
+        <p data-user-label>Checklist diario da sociedade</p>
+      </div>
+      <div class="topbar-actions">
+        <button id="enable-notifications" class="button secondary" type="button">Ativar Notificacoes</button>
+        <button class="button danger js-logout" type="button">Sair</button>
+      </div>
+    </header>
+
+    <nav class="subnav">
+      <a class="subnav-link" href="/app">Painel</a>
+      <a class="subnav-link" href="/configuracoes">Configuracoes</a>
+      <a class="subnav-link active" href="/avisos-hoje">Avisos de Hoje</a>
+      <a class="subnav-link" href="/proximos-alertas">Proximos Alertas</a>
+      <a class="subnav-link" href="/condicoes">Condicoes</a>
+    </nav>
+
+    <section class="grid one">
+      <article class="card">
+        <h2>Alertas ativos</h2>
+        <p class="muted">Recebes aviso no dia anterior para verificar e no proprio dia do bonus para nao esquecer o deposito.</p>
+        <ul id="today-alerts" class="pill-list"></ul>
+        <p id="alerts-status" class="status muted"></p>
+      </article>
+    </section>
+  </div>
+
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>
