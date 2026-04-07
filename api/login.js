@@ -10,6 +10,23 @@ function parseBody(body) {
   return body;
 }
 
+function decodeBase64Url(input) {
+  const normalized = String(input || "").replace(/-/g, "+").replace(/_/g, "/");
+  const padding = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
+  return Buffer.from(normalized + padding, "base64").toString("utf8");
+}
+
+function getJwtRole(jwt) {
+  try {
+    const parts = String(jwt || "").split(".");
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(decodeBase64Url(parts[1]));
+    return payload?.role || null;
+  } catch {
+    return null;
+  }
+}
+
 function pickRpcError(payload, fallback) {
   if (!payload) return fallback;
   if (typeof payload === "string") return payload;
@@ -28,6 +45,15 @@ module.exports = async (req, res) => {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     res.status(500).json({
       error: "Faltam SUPABASE_URL e/ou SUPABASE_SERVICE_ROLE_KEY na Vercel."
+    });
+    return;
+  }
+
+  const keyRole = getJwtRole(SUPABASE_SERVICE_ROLE_KEY);
+  if (keyRole !== "service_role") {
+    res.status(500).json({
+      error:
+        "SUPABASE_SERVICE_ROLE_KEY invalida. A chave atual nao e service_role (parece anon)."
     });
     return;
   }
