@@ -50,6 +50,36 @@ h1 {
   line-height: 1.1;
 }
 
+.login-form {
+  margin: 0 auto;
+  width: min(100%, 360px);
+  display: grid;
+  gap: 0.6rem;
+  text-align: left;
+}
+
+.login-form label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.7rem;
+  border: 1px solid #d4ddee;
+  font-size: 1rem;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.login-form input:focus {
+  outline: 2px solid #afc4ff;
+  outline-offset: 1px;
+}
+
 button {
   border: 0;
   border-radius: 0.75rem;
@@ -76,6 +106,10 @@ button:active {
   margin: 1rem 0 0;
   font-size: 0.95rem;
   color: var(--muted);
+}
+
+.status[data-state="loading"] {
+  color: #1f4f7a;
 }
 
 .status[data-state="success"] {

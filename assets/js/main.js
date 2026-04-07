@@ -1,61 +1,56 @@
-const statusElement = document.getElementById("supabase-status");
+const loginForm = document.getElementById("login-form");
+const loginButton = document.getElementById("login-button");
+const statusElement = document.getElementById("login-status");
 
 function updateStatus(message, state) {
-  if (!statusElement) {
-    return;
-  }
-
+  if (!statusElement) return;
   statusElement.textContent = message;
   statusElement.dataset.state = state;
 }
 
-async function initSupabase() {
-  updateStatus("A ligar ao Supabase...", "loading");
+async function handleLogin(event) {
+  event.preventDefault();
+
+  if (!loginForm) return;
+
+  const formData = new FormData(loginForm);
+  const username = String(formData.get("username") || "").trim();
+  const password = String(formData.get("password") || "");
+
+  if (!username || !password) {
+    updateStatus("Preenche username e password.", "error");
+    return;
+  }
+
+  updateStatus("A validar credenciais...", "loading");
+  if (loginButton) loginButton.disabled = true;
 
   try {
-    if (!window.supabase || typeof window.supabase.createClient !== "function") {
-      throw new Error("SDK do Supabase nao carregou.");
-    }
-
-    const response = await fetch("/api/supabase-config", {
-      headers: { Accept: "application/json" }
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify({ username, password })
     });
 
+    const payload = await response.json().catch(() => ({}));
+
     if (!response.ok) {
-      let serverMessage = "Nao foi possivel obter a configuracao do Supabase.";
-
-      try {
-        const body = await response.json();
-        if (body && body.error) {
-          serverMessage = body.error;
-        }
-      } catch {
-        // Mantem a mensagem padrao.
-      }
-
-      throw new Error(serverMessage);
+      throw new Error(payload.error || "Login invalido.");
     }
 
-    const { supabaseUrl, supabaseAnonKey } = await response.json();
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error("Configuracao do Supabase incompleta.");
-    }
-
-    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-    window.supabaseClient = supabaseClient;
-
-    // Teste leve para confirmar que o cliente foi inicializado.
-    const { error } = await supabaseClient.auth.getSession();
-    if (error) {
-      throw error;
-    }
-
-    updateStatus("Supabase ligado com sucesso.", "success");
+    updateStatus(`Bem-vindo, ${payload.username}.`, "success");
+    loginForm.reset();
   } catch (error) {
-    console.error("Erro ao iniciar Supabase:", error);
-    updateStatus(`Erro ao ligar Supabase: ${error.message}`, "error");
+    console.error("Erro de login:", error);
+    updateStatus(error.message || "Nao foi possivel entrar.", "error");
+  } finally {
+    if (loginButton) loginButton.disabled = false;
   }
 }
 
-document.addEventListener("DOMContentLoaded", initSupabase);
+if (loginForm) {
+  loginForm.addEventListener("submit", handleLogin);
+}

@@ -8,12 +8,19 @@
 </head>
 <body>
   <main class="hero">
-    <p class="tagline">Pagina de demonstracao</p>
+    <p class="tagline">Acesso ao sistema</p>
     <h1>Sociedade Plug In</h1>
-    <button type="button">Entrar</button>
-    <p id="supabase-status" class="status" aria-live="polite">A iniciar ligacao com Supabase...</p>
+    <form id="login-form" class="login-form" novalidate>
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+      <button id="login-button" type="submit">Entrar</button>
+    </form>
+    <p id="login-status" class="status" aria-live="polite">Introduz o teu username e password.</p>
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../assets/js/main.js"></script>
 </body>
 </html>
