@@ -31,7 +31,10 @@ Sociedade-Plug-in-1/
 |     |- 02_houses_setup.sql
 |     |- 03_fix_bet_houses_permissions.sql
 |     |- 04_change_user_password.sql
-|     `- 05_fix_crypt_extensions_compat.sql
+|     |- 05_fix_crypt_extensions_compat.sql
+|     |- 06_add_bonus_link_to_bet_houses.sql
+|     |- 07_add_house_values_to_bet_houses.sql
+|     `- 08_app_settings_important_notes.sql
 `- vercel.json
 ```
 
@@ -39,13 +42,17 @@ Sociedade-Plug-in-1/
 
 - Login com `username` e `password`
 - Passwords com hash bcrypt (pgcrypto)
-- Configuracoes com 2 menus:
+- Configuracoes com 3 menus:
   - gestao de casas (adicao, edicao, remocao)
+  - link de bonus opcional por casa
+  - valor de deposito e valor de levantamento por casa
+  - observacoes importantes editaveis e guardadas na base de dados
   - redefinicao de senha (senha atual + nova senha)
 - Avisos por casa:
   - dia anterior ao deposito (verificar se esta tudo correto)
   - no dia do bonus/deposito (nao esquecer de depositar)
 - Pagina de condicoes com as tabelas/regras da sociedade
+  - lucro por casa calculado como `levantamento - deposito`
 
 ## Configurar Supabase
 
@@ -54,6 +61,9 @@ Sociedade-Plug-in-1/
 3. Executar `supabase/sql/02_houses_setup.sql`.
 4. Executar `supabase/sql/04_change_user_password.sql`.
 5. Se aparecer erro `crypt(text, text) does not exist`, executar `supabase/sql/05_fix_crypt_extensions_compat.sql`.
+6. Executar `supabase/sql/06_add_bonus_link_to_bet_houses.sql` para adicionar o campo opcional `bonus_link`.
+7. Executar `supabase/sql/07_add_house_values_to_bet_houses.sql` para adicionar os valores de deposito e levantamento por casa.
+8. Executar `supabase/sql/08_app_settings_important_notes.sql` para criar as observacoes importantes editaveis.
 
 Utilizadores iniciais:
 - `goncalo` / `Goncalo@123`

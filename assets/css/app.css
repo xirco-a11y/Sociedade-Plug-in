@@ -583,6 +583,18 @@ textarea:focus {
   color: var(--muted);
 }
 
+.condicoes .config-menu {
+  margin-bottom: 0.9rem;
+}
+
+.condicoes-panel > h2 {
+  margin-top: 0;
+}
+
+.condicoes-block-title {
+  margin: 1rem 0 0.45rem;
+}
+
 .condicoes h2 {
   margin-top: 1.3rem;
 }

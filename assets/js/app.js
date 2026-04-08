@@ -19,12 +19,18 @@ const cancelHouseEditButtonEl = document.getElementById("cancel-house-edit-butto
 const passwordFormEl = document.getElementById("password-form");
 const passwordFormStatusEl = document.getElementById("password-form-status");
 const changePasswordButtonEl = document.getElementById("change-password-button");
+const importantNotesFormEl = document.getElementById("important-notes-form");
+const importantNotesStatusEl = document.getElementById("important-notes-status");
+const saveImportantNotesButtonEl = document.getElementById("save-important-notes-button");
 
 const todayAlertsEl = document.getElementById("today-alerts");
 const alertsStatusEl = document.getElementById("alerts-status");
 const upcomingAlertsBodyEl = document.getElementById("upcoming-alerts-body");
 const upcomingStatusEl = document.getElementById("upcoming-status");
 const enableNotificationsBtnEl = document.getElementById("enable-notifications");
+const conditionsMenuEl = document.getElementById("condicoes-menu");
+const conditionsPanelsEl = document.getElementById("condicoes-panels");
+const conditionsStatusEl = document.getElementById("condicoes-status");
 
 const configMenuButtons = document.querySelectorAll("[data-config-menu]");
 const configPanels = document.querySelectorAll("[data-config-panel]");
@@ -33,6 +39,7 @@ const userLabels = document.querySelectorAll("[data-user-label]");
 const logoutButtons = document.querySelectorAll(".js-logout");
 
 let housesCache = [];
+let importantNotesCache = [];
 let editingHouseId = null;
 let rowMenuListenerBound = false;
 let currentUsername = null;
@@ -102,10 +109,494 @@ function formatDatePt(date) {
   }).format(date);
 }
 
+function toMoneyNumber(value) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  const normalized = String(value ?? "").trim().replace(",", ".");
+  if (!normalized) return 0;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatMoneyPt(value) {
+  return new Intl.NumberFormat("pt-PT", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(toMoneyNumber(value));
+}
+
+function normalizeImportantNotes(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+  }
+
+  const text = String(value ?? "");
+  if (!text.trim()) return [];
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
 function createTd(text) {
   const td = document.createElement("td");
   td.textContent = text ?? "";
   return td;
+}
+
+function createConditionCell(cell, isHeader = false) {
+  const cellEl = document.createElement(isHeader ? "th" : "td");
+  if (cell && typeof cell === "object" && !Array.isArray(cell)) {
+    const value = cell.value ?? "";
+    if (cell.className) {
+      cellEl.className = String(cell.className);
+    }
+
+    if (cell.href) {
+      const linkEl = document.createElement("a");
+      linkEl.href = String(cell.href);
+      linkEl.target = "_blank";
+      linkEl.rel = "noopener noreferrer";
+      linkEl.textContent = String(value || cell.href);
+
+      if (cell.strong) {
+        const strongEl = document.createElement("strong");
+        strongEl.appendChild(linkEl);
+        cellEl.appendChild(strongEl);
+      } else {
+        cellEl.appendChild(linkEl);
+      }
+
+      return cellEl;
+    }
+
+    if (cell.strong) {
+      const strongEl = document.createElement("strong");
+      strongEl.textContent = String(value);
+      cellEl.appendChild(strongEl);
+    } else {
+      cellEl.textContent = String(value);
+    }
+    return cellEl;
+  }
+
+  cellEl.textContent = String(cell ?? "");
+  return cellEl;
+}
+
+function buildHouseScheduleRows(houses) {
+  return houses
+    .filter((house) => Boolean(house) && house.is_active !== false)
+    .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt"))
+    .map((house) => {
+      const depositText = `${weekdayNames[house.deposit_weekday] || "-"}${house.deposit_deadline ? ` ate ${house.deposit_deadline}` : ""}`;
+      const bonusText = `${weekdayNames[house.bonus_weekday] || "-"}${house.bonus_label ? ` (${house.bonus_label})` : ""}`;
+      return [house.name || "-", depositText, bonusText];
+    });
+}
+
+function buildHouseBonusLinkRows(houses) {
+  return houses
+    .filter((house) => Boolean(house) && house.is_active !== false)
+    .map((house) => ({
+      name: house.name || "-",
+      bonusLink: String(house.bonus_link || "").trim()
+    }))
+    .filter((house) => Boolean(house.bonusLink))
+    .sort((a, b) => a.name.localeCompare(b.name, "pt"))
+    .map((house) => [
+      house.name,
+      {
+        value: house.bonusLink,
+        href: house.bonusLink
+      }
+    ]);
+}
+
+function getHouseObservation(house) {
+  if (house?.notes) return String(house.notes);
+  if (house?.owner_name === "ambos") return "cada um";
+  return String(house?.owner_name || "");
+}
+
+function buildHouseValueRows(houses, source) {
+  const activeHouses = houses
+    .filter((house) => Boolean(house) && house.is_active !== false)
+    .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "pt"));
+
+  if (!activeHouses.length) return [];
+
+  let totalValue = 0;
+  let totalHalf = 0;
+
+  const rows = activeHouses.map((house) => {
+    const depositAmount = toMoneyNumber(house.deposit_amount);
+    const withdrawalAmount = toMoneyNumber(house.withdrawal_amount);
+    const value =
+      source === "houses_values_withdrawal"
+        ? withdrawalAmount
+        : source === "houses_values_profit"
+          ? withdrawalAmount - depositAmount
+          : depositAmount;
+    const halfValue = value / 2;
+    const valueCell =
+      source === "houses_values_profit"
+        ? {
+            value: formatMoneyPt(value),
+            className: value < 0 ? "money-neg" : value > 0 ? "money-pos" : ""
+          }
+        : formatMoneyPt(value);
+    const halfCell =
+      source === "houses_values_profit"
+        ? {
+            value: formatMoneyPt(halfValue),
+            className: halfValue < 0 ? "money-neg" : halfValue > 0 ? "money-pos" : ""
+          }
+        : formatMoneyPt(halfValue);
+
+    totalValue += value;
+    totalHalf += halfValue;
+
+    return [
+      house.name || "-",
+      valueCell,
+      halfCell,
+      getHouseObservation(house)
+    ];
+  });
+
+  const totalValueCell =
+    source === "houses_values_profit"
+      ? {
+          value: formatMoneyPt(totalValue),
+          className: totalValue < 0 ? "money-neg" : totalValue > 0 ? "money-pos" : "",
+          strong: true
+        }
+      : {
+          value: formatMoneyPt(totalValue),
+          strong: true
+        };
+  const totalHalfCell =
+    source === "houses_values_profit"
+      ? {
+          value: formatMoneyPt(totalHalf),
+          className: totalHalf < 0 ? "money-neg" : totalHalf > 0 ? "money-pos" : "",
+          strong: true
+        }
+      : {
+          value: formatMoneyPt(totalHalf),
+          strong: true
+        };
+
+  rows.push([
+    { value: "Total", strong: true },
+    totalValueCell,
+    totalHalfCell,
+    { value: "individual", strong: true }
+  ]);
+
+  return rows;
+}
+
+function buildConditionRows(block, houses) {
+  if (block?.source === "houses_schedule") {
+    const dynamicRows = buildHouseScheduleRows(houses);
+    if (dynamicRows.length) return dynamicRows;
+  }
+  if (block?.source === "houses_bonus_links") {
+    return buildHouseBonusLinkRows(houses);
+  }
+  if (
+    block?.source === "houses_values_deposit" ||
+    block?.source === "houses_values_withdrawal" ||
+    block?.source === "houses_values_profit"
+  ) {
+    return buildHouseValueRows(houses, block.source);
+  }
+
+  if (Array.isArray(block?.rows)) return block.rows;
+  if (Array.isArray(block?.fallbackRows)) return block.fallbackRows;
+  return [];
+}
+
+function renderConditionTable(block, houses) {
+  const container = document.createElement("div");
+  if (block?.title) {
+    const title = document.createElement("p");
+    title.className = "condicoes-block-title";
+    const strongEl = document.createElement("strong");
+    strongEl.textContent = block.title;
+    title.appendChild(strongEl);
+    container.appendChild(title);
+  }
+
+  const wrap = document.createElement("div");
+  wrap.className = "table-wrap";
+  const table = document.createElement("table");
+  const columns = Array.isArray(block?.columns) ? block.columns : [];
+  const rows = buildConditionRows(block, houses);
+  const columnCount = columns.length || (Array.isArray(rows[0]) ? rows[0].length : 1);
+
+  if (columns.length) {
+    const thead = document.createElement("thead");
+    const tr = document.createElement("tr");
+    columns.forEach((column) => {
+      tr.appendChild(createConditionCell(column, true));
+    });
+    thead.appendChild(tr);
+    table.appendChild(thead);
+  }
+
+  const tbody = document.createElement("tbody");
+  if (!rows.length) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = columnCount;
+    td.textContent = block?.emptyMessage || "Sem dados para mostrar.";
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  } else {
+    rows.forEach((row) => {
+      const tr = document.createElement("tr");
+      const cells = Array.isArray(row) ? row : [row];
+
+      cells.forEach((cell) => {
+        tr.appendChild(createConditionCell(cell));
+      });
+
+      for (let index = cells.length; index < columnCount; index += 1) {
+        tr.appendChild(createConditionCell(""));
+      }
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  container.appendChild(wrap);
+  return container;
+}
+
+function renderConditionBlock(block, houses, importantNotes) {
+  if (!block || typeof block !== "object") return null;
+
+  if (block.type === "heading") {
+    const heading = document.createElement("h3");
+    heading.textContent = block.text || "";
+    return heading;
+  }
+
+  if (block.type === "paragraph") {
+    const paragraph = document.createElement("p");
+    paragraph.textContent = block.text || "";
+    return paragraph;
+  }
+
+  if (block.type === "note") {
+    const paragraph = document.createElement("p");
+    const strongEl = document.createElement("strong");
+    strongEl.textContent = block.text || "";
+    paragraph.appendChild(strongEl);
+    return paragraph;
+  }
+
+  if (block.type === "list") {
+    const items =
+      block.source === "important_notes"
+        ? normalizeImportantNotes(importantNotes)
+        : Array.isArray(block.items)
+          ? block.items
+          : [];
+    if (!items.length) {
+      const empty = document.createElement("p");
+      empty.className = "muted";
+      empty.textContent = block.emptyMessage || "Sem dados para mostrar.";
+      return empty;
+    }
+
+    const list = document.createElement("ul");
+    items.forEach((item) => {
+      const li = document.createElement("li");
+      li.textContent = String(item || "");
+      list.appendChild(li);
+    });
+    return list;
+  }
+
+  if (block.type === "table") {
+    return renderConditionTable(block, houses);
+  }
+
+  return null;
+}
+
+function setConditionsPanel(panelName) {
+  if (!conditionsMenuEl || !conditionsPanelsEl) return;
+  const menuButtons = conditionsMenuEl.querySelectorAll("[data-condicoes-menu]");
+  const panels = conditionsPanelsEl.querySelectorAll("[data-condicoes-panel]");
+
+  menuButtons.forEach((button) => {
+    const active = button.dataset.condicoesMenu === panelName;
+    button.classList.toggle("active", active);
+  });
+
+  panels.forEach((panel) => {
+    const active = panel.dataset.condicoesPanel === panelName;
+    panel.classList.toggle("active", active);
+  });
+}
+
+function renderConditionsPage(config, houses, importantNotes) {
+  if (!conditionsMenuEl || !conditionsPanelsEl) return 0;
+
+  const sections = Array.isArray(config?.sections) ? config.sections : [];
+  conditionsMenuEl.innerHTML = "";
+  conditionsPanelsEl.innerHTML = "";
+
+  if (!sections.length) return 0;
+
+  sections.forEach((section, index) => {
+    const sectionId = String(section?.id || `menu-${index + 1}`);
+    const menuLabel = section?.label || section?.title || sectionId;
+
+    const menuButton = document.createElement("button");
+    menuButton.type = "button";
+    menuButton.className = "config-menu-button";
+    menuButton.dataset.condicoesMenu = sectionId;
+    menuButton.textContent = menuLabel;
+    menuButton.addEventListener("click", () => {
+      setConditionsPanel(sectionId);
+      if (window.history.replaceState) {
+        window.history.replaceState(null, "", `#${sectionId}`);
+      } else {
+        window.location.hash = sectionId;
+      }
+    });
+    conditionsMenuEl.appendChild(menuButton);
+
+    const panel = document.createElement("section");
+    panel.className = "config-panel condicoes-panel";
+    panel.dataset.condicoesPanel = sectionId;
+
+    if (section?.title) {
+      const title = document.createElement("h2");
+      title.textContent = section.title;
+      panel.appendChild(title);
+    }
+
+    if (section?.description) {
+      const description = document.createElement("p");
+      description.className = "muted";
+      description.textContent = section.description;
+      panel.appendChild(description);
+    }
+
+    const blocks = Array.isArray(section?.blocks) ? section.blocks : [];
+    blocks.forEach((block) => {
+      const blockEl = renderConditionBlock(block, houses, importantNotes);
+      if (blockEl) panel.appendChild(blockEl);
+    });
+
+    conditionsPanelsEl.appendChild(panel);
+  });
+
+  const hashPanel = String(window.location.hash || "").replace("#", "");
+  const initialPanel = sections.some((section) => String(section?.id) === hashPanel)
+    ? hashPanel
+    : String(sections[0].id || "");
+
+  if (initialPanel) {
+    setConditionsPanel(initialPanel);
+  }
+
+  return sections.length;
+}
+
+async function fetchConditionsConfig() {
+  const response = await fetch("/assets/data/condicoes.json", {
+    headers: { Accept: "application/json" }
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || "Nao foi possivel carregar o menu de condicoes.");
+  }
+
+  return payload;
+}
+
+async function fetchImportantNotes() {
+  const response = await fetch("/api/settings?key=important_notes", {
+    headers: { Accept: "application/json" }
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || "Nao foi possivel carregar observacoes importantes.");
+  }
+  return normalizeImportantNotes(payload.importantNotes);
+}
+
+async function saveImportantNotes(notes) {
+  const response = await fetch("/api/settings", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({
+      key: "important_notes",
+      importantNotes: normalizeImportantNotes(notes)
+    })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || "Nao foi possivel guardar observacoes importantes.");
+  }
+  return normalizeImportantNotes(payload.importantNotes);
+}
+
+async function initConditionsPage() {
+  if (!conditionsMenuEl || !conditionsPanelsEl) return;
+
+  setStatus(conditionsStatusEl, "A carregar menus de condicoes...", "warn");
+
+  let config;
+  try {
+    config = await fetchConditionsConfig();
+  } catch (error) {
+    setStatus(conditionsStatusEl, error.message || "Falha ao carregar condicoes.", "error");
+    return;
+  }
+
+  let houses = [];
+  let importantNotes = [];
+  const warnings = [];
+  try {
+    houses = await fetchHouses();
+  } catch {
+    warnings.push("Menus carregados, mas sem atualizar Datas, Links Bonus e Valores pelas casas configuradas.");
+  }
+  try {
+    importantNotes = await fetchImportantNotes();
+  } catch {
+    warnings.push("Observacoes importantes indisponiveis na base de dados.");
+  }
+
+  const sectionsCount = renderConditionsPage(config, houses, importantNotes);
+  if (!sectionsCount) {
+    setStatus(conditionsStatusEl, "Nenhum menu de condicoes foi encontrado.", "error");
+    return;
+  }
+
+  if (warnings.length) {
+    setStatus(conditionsStatusEl, warnings.join(" "), "warn");
+    return;
+  }
+
+  importantNotesCache = importantNotes;
+  setStatus(conditionsStatusEl, `${sectionsCount} menu(s) de condicoes carregado(s).`, "ok");
 }
 
 function notifyOncePerDay(key, title, body) {
@@ -180,7 +671,8 @@ function initConfigMenus() {
   if (!configMenuButtons.length || !configPanels.length) return;
 
   const hashPanel = String(window.location.hash || "").replace("#", "");
-  const initialPanel = hashPanel === "password" ? "password" : "houses";
+  const availablePanels = new Set(["houses", "important-notes", "password"]);
+  const initialPanel = availablePanels.has(hashPanel) ? hashPanel : "houses";
   setConfigPanel(initialPanel);
 
   configMenuButtons.forEach((button) => {
@@ -289,6 +781,8 @@ function resetHouseFormState() {
   if (houseIdInput) houseIdInput.value = "";
 
   if (houseFormEl.elements.depositDeadline) houseFormEl.elements.depositDeadline.value = "23:59";
+  if (houseFormEl.elements.depositAmount) houseFormEl.elements.depositAmount.value = "0";
+  if (houseFormEl.elements.withdrawalAmount) houseFormEl.elements.withdrawalAmount.value = "0";
   if (houseFormEl.elements.reminderEnabled) houseFormEl.elements.reminderEnabled.checked = true;
   if (houseFormEl.elements.isActive) houseFormEl.elements.isActive.checked = true;
 
@@ -318,6 +812,15 @@ function startHouseEdit(houseId) {
   }
   if (houseFormEl.elements.bonusLabel) {
     houseFormEl.elements.bonusLabel.value = house.bonus_label || "";
+  }
+  if (houseFormEl.elements.bonusLink) {
+    houseFormEl.elements.bonusLink.value = house.bonus_link || "";
+  }
+  if (houseFormEl.elements.depositAmount) {
+    houseFormEl.elements.depositAmount.value = toMoneyNumber(house.deposit_amount).toFixed(2);
+  }
+  if (houseFormEl.elements.withdrawalAmount) {
+    houseFormEl.elements.withdrawalAmount.value = toMoneyNumber(house.withdrawal_amount).toFixed(2);
   }
   if (houseFormEl.elements.notes) houseFormEl.elements.notes.value = house.notes || "";
   if (houseFormEl.elements.reminderEnabled) {
@@ -359,7 +862,7 @@ function renderHousesTable(houses) {
   if (!houses.length) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
-    td.colSpan = 6;
+    td.colSpan = 8;
     td.textContent = "Sem casas registadas.";
     tr.appendChild(td);
     housesBodyEl.appendChild(tr);
@@ -377,6 +880,8 @@ function renderHousesTable(houses) {
     tr.appendChild(
       createTd(`${weekdayNames[house.bonus_weekday] || "-"}${house.bonus_label ? ` (${house.bonus_label})` : ""}`)
     );
+    tr.appendChild(createTd(formatMoneyPt(house.deposit_amount)));
+    tr.appendChild(createTd(formatMoneyPt(house.withdrawal_amount)));
     tr.appendChild(createTd(house.is_active ? "sim" : "nao"));
 
     const actionTd = document.createElement("td");
@@ -527,6 +1032,9 @@ function buildHousePayload(formData) {
     depositDeadline: String(formData.get("depositDeadline") || "").trim(),
     bonusWeekday: Number(formData.get("bonusWeekday")),
     bonusLabel: String(formData.get("bonusLabel") || "").trim(),
+    bonusLink: String(formData.get("bonusLink") || "").trim(),
+    depositAmount: String(formData.get("depositAmount") || "").trim(),
+    withdrawalAmount: String(formData.get("withdrawalAmount") || "").trim(),
     notes: String(formData.get("notes") || "").trim(),
     reminderEnabled: formData.get("reminderEnabled") === "on",
     isActive: formData.get("isActive") === "on"
@@ -543,6 +1051,11 @@ async function handleHouseSubmit(event) {
 
   if (!payload.name) {
     setStatus(houseFormStatusEl, "Indica o nome da casa.", "error");
+    return;
+  }
+
+  if (toMoneyNumber(payload.depositAmount) < 0 || toMoneyNumber(payload.withdrawalAmount) < 0) {
+    setStatus(houseFormStatusEl, "Valores de deposito/levantamento devem ser iguais ou superiores a 0.", "error");
     return;
   }
 
@@ -565,6 +1078,46 @@ async function handleHouseSubmit(event) {
     setStatus(houseFormStatusEl, error.message || "Falha ao guardar casa.", "error");
   } finally {
     if (saveHouseButtonEl) saveHouseButtonEl.disabled = false;
+  }
+}
+
+async function loadImportantNotesForm() {
+  if (!importantNotesFormEl) return;
+  setStatus(importantNotesStatusEl, "A carregar observacoes importantes...", "warn");
+
+  try {
+    const notes = await fetchImportantNotes();
+    importantNotesCache = notes;
+    if (importantNotesFormEl.elements.importantNotes) {
+      importantNotesFormEl.elements.importantNotes.value = notes.join("\n");
+    }
+    setStatus(importantNotesStatusEl, "Observacoes carregadas.", "ok");
+  } catch (error) {
+    setStatus(importantNotesStatusEl, error.message || "Falha ao carregar observacoes importantes.", "error");
+  }
+}
+
+async function handleImportantNotesSubmit(event) {
+  event.preventDefault();
+  if (!importantNotesFormEl) return;
+
+  const rawText = String(importantNotesFormEl.elements.importantNotes?.value || "");
+  const notes = normalizeImportantNotes(rawText);
+
+  setStatus(importantNotesStatusEl, "A guardar observacoes importantes...", "warn");
+  if (saveImportantNotesButtonEl) saveImportantNotesButtonEl.disabled = true;
+
+  try {
+    const savedNotes = await saveImportantNotes(notes);
+    importantNotesCache = savedNotes;
+    if (importantNotesFormEl.elements.importantNotes) {
+      importantNotesFormEl.elements.importantNotes.value = savedNotes.join("\n");
+    }
+    setStatus(importantNotesStatusEl, "Observacoes guardadas com sucesso.", "ok");
+  } catch (error) {
+    setStatus(importantNotesStatusEl, error.message || "Falha ao guardar observacoes importantes.", "error");
+  } finally {
+    if (saveImportantNotesButtonEl) saveImportantNotesButtonEl.disabled = false;
   }
 }
 
@@ -661,8 +1214,17 @@ async function init() {
     });
   }
 
+  if (importantNotesFormEl) {
+    importantNotesFormEl.addEventListener("submit", handleImportantNotesSubmit);
+    await loadImportantNotesForm();
+  }
+
   if (passwordFormEl) {
     passwordFormEl.addEventListener("submit", (event) => handlePasswordSubmit(event, user));
+  }
+
+  if (conditionsMenuEl && conditionsPanelsEl) {
+    await initConditionsPage();
   }
 
   const needsHousesData =

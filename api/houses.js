@@ -45,6 +45,20 @@ function toBoolean(value, defaultValue = false) {
   return defaultValue;
 }
 
+function parseMoneyInput(value, defaultValue = 0) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Number(value.toFixed(2));
+  }
+
+  const raw = String(value ?? "").trim();
+  if (!raw) return defaultValue;
+
+  const normalized = raw.replace(",", ".");
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed)) return NaN;
+  return Number(parsed.toFixed(2));
+}
+
 function firstValue(value) {
   if (Array.isArray(value)) return value[0];
   return value;
@@ -74,6 +88,7 @@ function pickErrorMessage(payload, fallback) {
 }
 
 function normalizeHousePayload(body) {
+  const bonusLink = String(body.bonusLink ?? body.bonus_link ?? "").trim();
   return {
     name: String(body.name || "").trim().toLowerCase(),
     owner_name: String(body.ownerName || "").trim().toLowerCase(),
@@ -81,6 +96,9 @@ function normalizeHousePayload(body) {
     deposit_deadline: String(body.depositDeadline || "23:59").trim(),
     bonus_weekday: Number(body.bonusWeekday),
     bonus_label: String(body.bonusLabel || "").trim(),
+    bonus_link: bonusLink || null,
+    deposit_amount: parseMoneyInput(body.depositAmount ?? body.deposit_amount, 0),
+    withdrawal_amount: parseMoneyInput(body.withdrawalAmount ?? body.withdrawal_amount, 0),
     reminder_enabled: toBoolean(body.reminderEnabled, true),
     notes: String(body.notes || "").trim(),
     is_active: toBoolean(body.isActive, true)
@@ -101,13 +119,22 @@ function validateHouse(house) {
   if (!/^\d{2}:\d{2}$/.test(house.deposit_deadline)) {
     return "Hora limite de deposito invalida (HH:MM).";
   }
+  if (house.bonus_link && !/^https?:\/\/\S+$/i.test(house.bonus_link)) {
+    return "Link de bonus invalido (usar http:// ou https://).";
+  }
+  if (!Number.isFinite(house.deposit_amount) || house.deposit_amount < 0) {
+    return "Valor de deposito invalido.";
+  }
+  if (!Number.isFinite(house.withdrawal_amount) || house.withdrawal_amount < 0) {
+    return "Valor de levantamento invalido.";
+  }
   return null;
 }
 
 async function listHouses(baseUrl, serviceKey) {
   const url =
     `${baseUrl}/rest/v1/bet_houses` +
-    "?select=id,name,owner_name,deposit_weekday,deposit_deadline,bonus_weekday,bonus_label,reminder_enabled,is_active,notes" +
+    "?select=id,name,owner_name,deposit_weekday,deposit_deadline,bonus_weekday,bonus_label,bonus_link,deposit_amount,withdrawal_amount,reminder_enabled,is_active,notes" +
     "&order=name.asc";
 
   const response = await fetch(url, {

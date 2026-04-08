@@ -36,6 +36,9 @@
         <button class="config-menu-button active" data-config-menu="houses" type="button">
           Gestao de Casas
         </button>
+        <button class="config-menu-button" data-config-menu="important-notes" type="button">
+          Observacoes Importantes
+        </button>
         <button class="config-menu-button" data-config-menu="password" type="button">
           Redefinir Senha
         </button>
@@ -55,6 +58,8 @@
                   <th>Responsavel</th>
                   <th>Deposito</th>
                   <th>Bonus</th>
+                  <th>Valor Deposito</th>
+                  <th>Valor Levantamento</th>
                   <th>Ativa</th>
                   <th>Acoes</th>
                 </tr>
@@ -115,6 +120,18 @@
               <input name="bonusLabel" type="text" placeholder="ex: sexta ate as 23h59">
             </label>
             <label class="full">
+              Link do bonus (opcional)
+              <input name="bonusLink" type="url" placeholder="https://exemplo.com/bonus">
+            </label>
+            <label>
+              Valor deposito
+              <input name="depositAmount" type="number" inputmode="decimal" min="0" step="0.01" value="0" required>
+            </label>
+            <label>
+              Valor levantamento
+              <input name="withdrawalAmount" type="number" inputmode="decimal" min="0" step="0.01" value="0" required>
+            </label>
+            <label class="full">
               Notas
               <textarea name="notes" placeholder="observacoes desta casa"></textarea>
             </label>
@@ -136,6 +153,25 @@
           <p id="house-form-status" class="status muted"></p>
         </article>
       </div>
+    </section>
+
+    <section class="config-panel" data-config-panel="important-notes">
+      <article class="card card-narrow">
+        <h2>Observacoes importantes</h2>
+        <p class="muted">Uma observacao por linha. Este conteudo aparece em Condicoes > Observacoes importantes.</p>
+        <form id="important-notes-form" class="grid-form" novalidate>
+          <label class="full">
+            Lista de observacoes
+            <textarea
+              id="important-notes-text"
+              name="importantNotes"
+              placeholder="Escreve uma observacao por linha"
+            ></textarea>
+          </label>
+          <button id="save-important-notes-button" class="full" type="submit">Guardar observacoes</button>
+        </form>
+        <p id="important-notes-status" class="status muted"></p>
+      </article>
     </section>
 
     <section class="config-panel" data-config-panel="password">

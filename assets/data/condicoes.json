@@ -1,0 +1,160 @@
+{
+  "sections": [
+    {
+      "id": "datas",
+      "label": "Datas",
+      "title": "Datas",
+      "description": "Datas por casa para deposito e bonus.",
+      "blocks": [
+        {
+          "type": "table",
+          "source": "houses_schedule",
+          "columns": ["Casa", "Deposito", "Dia do bonus"],
+          "fallbackRows": [
+            ["betonblack", "sexta ate as 23h59", "sexta"],
+            ["winwin", "quinta ate as 23h59", "quinta"],
+            ["22bet", "sexta ate as 23h59", "sexta"],
+            ["betlabel", "sabado ate as 23h59", "sabado"]
+          ],
+          "emptyMessage": "Sem casas registadas para mostrar datas."
+        },
+        {
+          "type": "note",
+          "text": "Todos os bonus tem que ser finalizados em 24h."
+        }
+      ]
+    },
+    {
+      "id": "links-bonus",
+      "label": "Links Bonus",
+      "title": "Links Bonus",
+      "description": "Liga os links oficiais de bonus por casa.",
+      "blocks": [
+        {
+          "type": "table",
+          "source": "houses_bonus_links",
+          "columns": ["Casa", "Link bonus"],
+          "emptyMessage": "Sem links de bonus configurados."
+        },
+        {
+          "type": "paragraph",
+          "text": "Atualiza os links sempre que as casas mudarem as paginas de promocao."
+        }
+      ]
+    },
+    {
+      "id": "condicoes-casas",
+      "label": "Condicoes de cada casa",
+      "title": "Condicoes de cada casa",
+      "description": "Tabelas de odds minimas e exemplos de ganhos.",
+      "blocks": [
+        {
+          "type": "heading",
+          "text": "Odd minima individual de 1.55 - x6"
+        },
+        {
+          "type": "table",
+          "title": "Betonblack 1",
+          "columns": ["Valor", "Odd min", "Saldo dps aposta", "Ganho"],
+          "rows": [
+            ["100,00", "1,58", "0,00", "158,00"],
+            ["158,00", "2,10", "0,00", "331,80"],
+            ["331,80", "1,60", "0,00", "530,88"],
+            ["10,20", "7,80", "520,68", "79,56"],
+            [{ "value": "Total", "strong": true }, "", { "value": "600,24", "strong": true }, ""]
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Betonblack 2",
+          "columns": ["Valor", "Odd", "Saldo dps aposta", "Ganho"],
+          "rows": [
+            ["100,00", "2,68", "0,00", "267,90"],
+            ["267,90", "2,13", "0,00", "570,63"],
+            ["232,10", "1,55", "338,53", "359,76"],
+            ["0,00", "", "698,28", ""]
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "Odd minima individual de 1.4 - x3"
+        },
+        {
+          "type": "table",
+          "title": "Casas x3",
+          "columns": ["Casa", "Odd min", "Odd min total"],
+          "rows": [
+            ["winwin", "", ""],
+            ["22bet", "", ""],
+            ["betlabel", "", "3,01"]
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Ganhos",
+          "columns": ["Valor", "Calculo", "Ganho"],
+          "rows": [
+            ["100,00", "1,45*1,44*1,44", "300,00"],
+            ["200,00", "", ""],
+            ["300,00", "", ""]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "valores-deposito",
+      "label": "Valores Deposito",
+      "title": "Valores Deposito",
+      "description": "Distribuicao de valor por casa para deposito.",
+      "blocks": [
+        {
+          "source": "houses_values_deposit",
+          "type": "table",
+          "columns": ["Casa", "Deposito", "/2", "Observacao"],
+          "emptyMessage": "Sem valores de deposito configurados."
+        }
+      ]
+    },
+    {
+      "id": "valores-levantamento",
+      "label": "Valores Levantamento",
+      "title": "Valores Levantamento",
+      "description": "Planeamento de levantamento por casa.",
+      "blocks": [
+        {
+          "source": "houses_values_withdrawal",
+          "type": "table",
+          "columns": ["Casa", "Levantamento", "/2", "Observacao"],
+          "emptyMessage": "Sem valores de levantamento configurados."
+        }
+      ]
+    },
+    {
+      "id": "lucro",
+      "label": "Lucro",
+      "title": "Lucro",
+      "description": "Resumo estimado de lucro por casa.",
+      "blocks": [
+        {
+          "source": "houses_values_profit",
+          "type": "table",
+          "columns": ["Casa", "Lucro", "/2", "Observacao"],
+          "emptyMessage": "Sem dados para calcular lucro."
+        }
+      ]
+    },
+    {
+      "id": "observacoes-importantes",
+      "label": "Observacoes importantes",
+      "title": "Observacoes importantes",
+      "description": "Regras que devem ser sempre respeitadas.",
+      "blocks": [
+        {
+          "type": "list",
+          "source": "important_notes",
+          "emptyMessage": "Sem observacoes importantes configuradas."
+        }
+      ]
+    }
+  ]
+}
