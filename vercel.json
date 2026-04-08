@@ -23,6 +23,10 @@
     {
       "source": "/condicoes",
       "destination": "/pages/condicoes.html"
+    },
+    {
+      "source": "/calculadora-hedge",
+      "destination": "/pages/calculadora-hedge.html"
     }
   ]
 }

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sociedade Plug In - Calculadora Hedge</title>
+  <meta name="theme-color" content="#213a62">
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/plugin-icon.svg">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar glass">
+      <div>
+        <h1>Calculadora de Apostas Hedge</h1>
+        <p data-user-label>Cobertura de aposta com tabela de odds</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="button danger js-logout" type="button">Sair</button>
+      </div>
+    </header>
+
+    <nav class="subnav">
+      <a class="subnav-link" href="/app">Painel</a>
+      <a class="subnav-link" href="/configuracoes">Configuracoes</a>
+      <a class="subnav-link" href="/avisos-hoje">Avisos de Hoje</a>
+      <a class="subnav-link" href="/proximos-alertas">Proximos Alertas</a>
+      <a class="subnav-link" href="/condicoes">Condicoes</a>
+      <a class="subnav-link active" href="/calculadora-hedge">Calculadora Hedge</a>
+    </nav>
+
+    <section class="grid one">
+      <article class="card">
+        <h2>Parametros</h2>
+        <p class="muted">Define a aposta inicial e calcula a contra aposta ideal para cada odd.</p>
+        <form id="hedge-form" class="grid-form" novalidate>
+          <label>
+            Saldo real para proteger
+            <input id="hedge-stake" name="stake" type="number" inputmode="decimal" min="0.01" step="0.01" value="19">
+          </label>
+          <label>
+            Odd da aposta inicial
+            <input id="hedge-odd" name="odd" type="number" inputmode="decimal" min="1.01" step="0.01" value="1.76">
+          </label>
+          <label>
+            Odd da contra aposta
+            <input id="hedge-counter-odd" name="counterOdd" type="number" inputmode="decimal" min="1.01" step="0.01" value="1.76">
+          </label>
+          <label>
+            Odd minima da tabela
+            <input id="hedge-min-odd" name="minOdd" type="number" inputmode="decimal" min="1.01" step="0.01" value="1.70">
+          </label>
+          <label>
+            Odd maxima da tabela
+            <input id="hedge-max-odd" name="maxOdd" type="number" inputmode="decimal" min="1.01" step="0.01" value="2.20">
+          </label>
+          <label>
+            Passo da tabela
+            <input id="hedge-step" name="step" type="number" inputmode="decimal" min="0.01" step="0.01" value="0.01">
+          </label>
+          <div class="form-actions full">
+            <button id="hedge-calculate-button" type="submit">Atualizar calculo</button>
+          </div>
+        </form>
+        <p id="hedge-status" class="status muted"></p>
+      </article>
+
+      <article class="card">
+        <h2>Resumo</h2>
+        <div class="hedge-summary">
+          <div class="hedge-summary-item">
+            <span class="hedge-summary-label">Saldo real para proteger</span>
+            <strong id="hedge-summary-stake" class="hedge-summary-value">--</strong>
+          </div>
+          <div class="hedge-summary-item">
+            <span class="hedge-summary-label">Odd protecao</span>
+            <strong id="hedge-summary-odd" class="hedge-summary-value">--</strong>
+          </div>
+          <div class="hedge-summary-item">
+            <span class="hedge-summary-label">Retorno protecao</span>
+            <strong id="hedge-summary-return" class="hedge-summary-value">--</strong>
+          </div>
+          <div class="hedge-summary-item">
+            <span class="hedge-summary-label">Contra aposta (odd escolhida)</span>
+            <strong id="hedge-summary-counter-stake" class="hedge-summary-value">--</strong>
+          </div>
+          <div class="hedge-summary-item">
+            <span class="hedge-summary-label">Resultado total</span>
+            <strong id="hedge-summary-net" class="hedge-summary-value">--</strong>
+          </div>
+          <div class="hedge-summary-item">
+            <span class="hedge-summary-label">Resultado individual</span>
+            <strong id="hedge-summary-net-individual" class="hedge-summary-value">--</strong>
+          </div>
+          <div class="hedge-summary-item">
+            <span class="hedge-summary-label">Odd de break-even</span>
+            <strong id="hedge-summary-break-even" class="hedge-summary-value">--</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Tabela de protecao</h2>
+        <div class="table-wrap">
+          <table class="hedge-table">
+            <thead>
+              <tr>
+                <th>Odd</th>
+                <th>Aposta</th>
+                <th>Resultado</th>
+                <th>Resultado individual</th>
+              </tr>
+            </thead>
+            <tbody id="hedge-table-body"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/hedge.js"></script>
+</body>
+</html>
