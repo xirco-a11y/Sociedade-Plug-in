@@ -144,6 +144,17 @@
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
+  function getEntryType(entry) {
+    const explicitType = String(entry?.entry_type || "").trim().toLowerCase();
+    if (explicitType === "bonus_payout" || explicitType === "rotation") {
+      return explicitType;
+    }
+
+    // Fallback para registos antigos sem entry_type.
+    if (!entry?.house_b_id) return "bonus_payout";
+    return "rotation";
+  }
+
   function setToneClass(element, value) {
     if (!element) return;
     element.classList.remove("money-pos", "money-neg");
@@ -389,16 +400,22 @@
 
   function calculateStats(entries) {
     let lucroSociedade = 0;
-    let prejuizoProtecoes = 0;
+    let saldoProtecoes = 0;
 
     entries.forEach((entry) => {
       const value = toNumber(entry.profit_loss);
-      if (value >= 0) {
-        lucroSociedade += value;
-      } else {
-        prejuizoProtecoes += Math.abs(value);
+      const entryType = getEntryType(entry);
+
+      if (entryType === "bonus_payout") {
+        if (value > 0) lucroSociedade += value;
+        return;
       }
+
+      // Rotacoes/protecoes entram apenas aqui, seja lucro ou prejuizo.
+      saldoProtecoes += value;
     });
+
+    const prejuizoProtecoes = Math.max(0, -saldoProtecoes);
 
     return {
       lucroSociedade,
