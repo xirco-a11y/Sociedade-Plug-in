@@ -613,12 +613,161 @@ textarea:focus {
   padding-left: 1.1rem;
 }
 
+.rotation-rules {
+  margin: 0.65rem 0 0;
+  padding-left: 1.15rem;
+}
+
+.rotation-rules li + li {
+  margin-top: 0.25rem;
+}
+
+.rotation-stats-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.65rem;
+}
+
+.rotation-stats-section {
+  border: 1px solid #d5e1f2;
+  border-radius: 0.9rem;
+  padding: 0.78rem;
+  background: #f9fbff;
+}
+
+.rotation-stats-section h2 {
+  margin: 0 0 0.5rem;
+}
+
+.rotation-stats-items {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.rotation-stats-item {
+  border: 1px solid #dbe6f7;
+  border-radius: 0.7rem;
+  padding: 0.58rem;
+  background: #fff;
+}
+
+.rotation-stats-label {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rotation-stats-value {
+  display: block;
+  margin-top: 0.32rem;
+  font-size: 1.02rem;
+}
+
+.rotation-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-bottom: 0.75rem;
+}
+
+.rotation-header-row h2 {
+  margin: 0;
+}
+
+.rotation-header-row .muted {
+  margin: 0.2rem 0 0;
+}
+
+.rotation-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.rotation-week-grid th,
+.rotation-week-grid td {
+  text-align: center;
+}
+
+.rotation-week-grid th:first-child,
+.rotation-week-grid td:first-child {
+  text-align: left;
+}
+
+.rotation-day-cell {
+  font-weight: 700;
+  color: #223f64;
+}
+
+.rotation-mark-cell {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.rotation-mark-cell.done {
+  color: var(--ok);
+}
+
+.rotation-mark-cell.has-details {
+  cursor: help;
+}
+
+.rotation-mark-cell.miss {
+  color: var(--danger);
+}
+
+.rotation-mark-cell.bonus {
+  color: #1d57bb;
+  text-transform: lowercase;
+}
+
+.rotation-manage-list {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.rotation-manage-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.rotation-manage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  border: 1px solid #d8e4f4;
+  border-radius: 0.7rem;
+  background: #f8fbff;
+  padding: 0.5rem 0.62rem;
+}
+
+.rotation-manage-item-text {
+  font-size: 0.86rem;
+  color: #234266;
+}
+
 @media (max-width: 920px) {
   .grid.two {
     grid-template-columns: 1fr;
   }
 
   .menu-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rotation-stats-sections {
+    grid-template-columns: 1fr;
+  }
+
+  .rotation-stats-items {
     grid-template-columns: 1fr;
   }
 }

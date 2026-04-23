@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sociedade Plug In - Rotacoes Semanais</title>
+  <meta name="theme-color" content="#213a62">
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/plugin-icon.svg">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar glass">
+      <div>
+        <h1>Registo de Apostas - Rotacoes</h1>
+        <p data-user-label>Semana atual por casa</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="button danger js-logout" type="button">Sair</button>
+      </div>
+    </header>
+
+    <nav class="subnav">
+      <a class="subnav-link" href="/app">Painel</a>
+      <a class="subnav-link" href="/configuracoes">Configuracoes</a>
+      <a class="subnav-link" href="/avisos-hoje">Avisos de Hoje</a>
+      <a class="subnav-link" href="/proximos-alertas">Proximos Alertas</a>
+      <a class="subnav-link active" href="/rotacoes-semanais">Rotacoes Semanais</a>
+      <a class="subnav-link" href="/condicoes">Condicoes</a>
+      <a class="subnav-link" href="/calculadora-hedge">Calculadora Hedge</a>
+    </nav>
+
+    <section class="hero-card">
+      <p class="eyebrow">Estatisticas</p>
+      <div class="rotation-stats-sections">
+        <article class="rotation-stats-section">
+          <h2>Global</h2>
+          <div class="rotation-stats-items">
+            <div class="rotation-stats-item">
+              <span class="rotation-stats-label">Lucro sociedade</span>
+              <strong id="stats-global-profit" class="rotation-stats-value">--</strong>
+            </div>
+            <div class="rotation-stats-item">
+              <span class="rotation-stats-label">Prejuizo com protecoes</span>
+              <strong id="stats-global-loss" class="rotation-stats-value">--</strong>
+            </div>
+            <div class="rotation-stats-item">
+              <span class="rotation-stats-label">Lucro - Prejuizo</span>
+              <strong id="stats-global-net" class="rotation-stats-value">--</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="rotation-stats-section">
+          <h2>Semana atual</h2>
+          <div class="rotation-stats-items">
+            <div class="rotation-stats-item">
+              <span class="rotation-stats-label">Lucro sociedade</span>
+              <strong id="stats-week-profit" class="rotation-stats-value">--</strong>
+            </div>
+            <div class="rotation-stats-item">
+              <span class="rotation-stats-label">Prejuizo com protecoes</span>
+              <strong id="stats-week-loss" class="rotation-stats-value">--</strong>
+            </div>
+            <div class="rotation-stats-item">
+              <span class="rotation-stats-label">Lucro - Prejuizo</span>
+              <strong id="stats-week-net" class="rotation-stats-value">--</strong>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="grid one">
+      <article class="card">
+        <div class="rotation-header-row">
+          <div>
+            <h2>Semana atual</h2>
+          </div>
+          <div class="rotation-header-actions">
+            <button id="rotation-toggle-form" class="button" type="button">Nova rotacao</button>
+            <button id="bonus-toggle-form" class="button secondary" type="button">Bonus Pagou</button>
+            <button id="rotation-manage-toggle" class="button secondary tiny" type="button">Apagar protecoes</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="rotation-week-grid">
+            <thead id="rotation-grid-head"></thead>
+            <tbody id="rotation-grid-body"></tbody>
+          </table>
+        </div>
+        <p id="rotation-grid-status" class="status muted"></p>
+      </article>
+    </section>
+
+    <section id="rotation-manage-section" class="grid one hidden">
+      <article class="card card-narrow">
+        <h2>Apagar protecoes</h2>
+        <p class="muted">Escolhe dia e casa para listar os registos desse ponto e apagar os que quiseres.</p>
+        <form class="grid-form" id="rotation-manage-form" novalidate>
+          <label>
+            Dia
+            <input id="rotation-manage-date" name="rotationManageDate" type="date">
+          </label>
+          <label>
+            Casa
+            <select id="rotation-manage-house" name="rotationManageHouse"></select>
+          </label>
+        </form>
+        <div id="rotation-manage-list" class="rotation-manage-list"></div>
+        <p id="rotation-manage-status" class="status muted"></p>
+      </article>
+    </section>
+
+    <section id="rotation-form-section" class="grid one hidden">
+      <article class="card card-narrow">
+        <h2>Nova rotacao</h2>
+        <form id="rotation-form" class="grid-form" novalidate>
+          <label class="full">
+            Dia da aposta
+            <input id="rotation-date" name="rotationDate" type="date" required>
+          </label>
+
+          <h3 class="full">Casa 1</h3>
+          <label>
+            Casa
+            <select id="rotation-house-a" name="houseAId" required></select>
+          </label>
+          <label>
+            Valor apostado (EUR)
+            <input name="amountHouseA" type="number" inputmode="decimal" min="0.01" step="0.01" required>
+          </label>
+          <label>
+            Odd
+            <input name="houseAOdd" type="number" inputmode="decimal" min="1.00" step="0.01" required>
+          </label>
+          <label>
+            O que apostei
+            <input name="houseABet" type="text" placeholder="ex: over 2.5" required>
+          </label>
+
+          <h3 class="full">Casa 2</h3>
+          <label>
+            Casa
+            <select id="rotation-house-b" name="houseBId" required></select>
+          </label>
+          <label>
+            Valor apostado (EUR)
+            <input name="amountHouseB" type="number" inputmode="decimal" min="0.01" step="0.01" required>
+          </label>
+          <label>
+            Odd
+            <input name="houseBOdd" type="number" inputmode="decimal" min="1.00" step="0.01" required>
+          </label>
+          <label>
+            O que apostei
+            <input name="houseBBet" type="text" placeholder="ex: under 2.5" required>
+          </label>
+
+          <h3 class="full">Fecho da rotacao</h3>
+          <label class="full">
+            Lucro / Prejuizo desta aposta (EUR)
+            <input name="profitLoss" type="number" inputmode="decimal" step="0.01" required>
+          </label>
+
+          <div class="form-actions full">
+            <button id="rotation-save-button" type="submit">Guardar rotacao</button>
+            <button id="rotation-cancel-button" class="button secondary" type="button">Cancelar</button>
+          </div>
+        </form>
+        <p id="rotation-form-status" class="status muted"></p>
+      </article>
+    </section>
+
+    <section id="bonus-form-section" class="grid one hidden">
+      <article class="card card-narrow">
+        <h2>Bonus Pagou</h2>
+        <p class="muted">Regista diretamente o lucro individual que recebeste na sociedade.</p>
+        <form id="bonus-form" class="grid-form" novalidate>
+          <label>
+            Dia
+            <input id="bonus-date" name="bonusDate" type="date" required>
+          </label>
+          <label>
+            Casa
+            <select id="bonus-house" name="bonusHouseId" required></select>
+          </label>
+          <label class="full">
+            Lucro individual (EUR)
+            <input id="bonus-profit" name="bonusProfit" type="number" inputmode="decimal" step="0.01" min="0" required>
+          </label>
+          <label class="full">
+            Nota (opcional)
+            <input id="bonus-notes" name="bonusNotes" type="text" placeholder="ex: bonus semanal pagou sem falhas">
+          </label>
+          <div class="form-actions full">
+            <button id="bonus-save-button" type="submit">Guardar bonus</button>
+            <button id="bonus-cancel-button" class="button secondary" type="button">Cancelar</button>
+          </div>
+        </form>
+        <p id="bonus-form-status" class="status muted"></p>
+      </article>
+    </section>
+  </div>
+
+  <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/rotacoes-semanais.js"></script>
+</body>
+</html>

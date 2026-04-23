@@ -1,6 +1,6 @@
-﻿# Sociedade Plug In
+# Sociedade Plug In
 
-App simples para gerir uma sociedade de casas de apostas: login, configuracoes, avisos e pagina de condicoes.
+App simples para gerir uma sociedade de casas de apostas: login, configuracoes, avisos, condicoes, calculadora hedge e folha semanal de rotacoes.
 
 ## Estrutura
 
@@ -9,22 +9,28 @@ Sociedade-Plug-in-1/
 |- api/
 |  |- change-password.js
 |  |- login.js
-|  `- houses.js
+|  |- houses.js
+|  |- settings.js
+|  `- rotations.js
 |- assets/
 |  |- css/
 |  |  |- style.css
 |  |  `- app.css
 |  |- js/
 |  |  |- main.js
-|  |  `- app.js
-|  `- img/
+|  |  |- app.js
+|  |  |- hedge.js
+|  |  `- rotacoes-semanais.js
+|  `- icons/
 |- pages/
 |  |- index.html
 |  |- app.html
 |  |- configuracoes.html
 |  |- avisos-hoje.html
-|  `- proximos-alertas.html
-|  `- condicoes.html
+|  |- proximos-alertas.html
+|  |- rotacoes-semanais.html
+|  |- condicoes.html
+|  `- calculadora-hedge.html
 |- supabase/
 |  `- sql/
 |     |- 01_auth_setup.sql
@@ -34,7 +40,8 @@ Sociedade-Plug-in-1/
 |     |- 05_fix_crypt_extensions_compat.sql
 |     |- 06_add_bonus_link_to_bet_houses.sql
 |     |- 07_add_house_values_to_bet_houses.sql
-|     `- 08_app_settings_important_notes.sql
+|     |- 08_app_settings_important_notes.sql
+|     `- 09_weekly_rotations.sql
 `- vercel.json
 ```
 
@@ -53,6 +60,20 @@ Sociedade-Plug-in-1/
   - no dia do bonus/deposito (nao esquecer de depositar)
 - Pagina de condicoes com as tabelas/regras da sociedade
   - lucro por casa calculado como `levantamento - deposito`
+- Calculadora hedge com tabela dinamica por range de odds
+- Rotacoes semanais por utilizador:
+  - cada user ve apenas a sua folha
+  - estatisticas da sociedade (soma de todas as rotacoes) lado a lado para `Global` e `Semana atual`
+  - em cada secao: `Lucro sociedade`, `Prejuizo com protecoes` e `Lucro - Prejuizo`
+  - tabela semanal com casas no topo e dias (segunda a domingo) na esquerda
+  - cada celula mostra `check` se ja houve aposta nessa casa/dia, senao mostra `X`
+  - no dia de bonus da casa, mostra `bonus` a azul em vez de `check/X`
+  - ao passar o rato no `check`, aparecem detalhes da(s) rotacao(oes) desse dia/casa
+  - botao `Nova rotacao` com preenchimento de casa 1 e casa 2
+  - botao `Bonus Pagou` para registar diretamente o lucro individual (sem calculos automáticos)
+  - botao discreto `Apagar protecoes` com filtro por dia/casa para remover registos
+  - por casa: valor apostado, odd e descricao do que foi apostado
+  - registo final apenas com lucro/prejuizo da rotacao (sem estados green/red/pending)
 
 ## Configurar Supabase
 
@@ -64,6 +85,7 @@ Sociedade-Plug-in-1/
 6. Executar `supabase/sql/06_add_bonus_link_to_bet_houses.sql` para adicionar o campo opcional `bonus_link`.
 7. Executar `supabase/sql/07_add_house_values_to_bet_houses.sql` para adicionar os valores de deposito e levantamento por casa.
 8. Executar `supabase/sql/08_app_settings_important_notes.sql` para criar as observacoes importantes editaveis.
+9. Executar `supabase/sql/09_weekly_rotations.sql` para criar a tabela de registos semanais de rotacao.
 
 Utilizadores iniciais:
 - `goncalo` / `Goncalo@123`
@@ -82,10 +104,20 @@ Rotas principais:
 - `/configuracoes`
 - `/avisos-hoje`
 - `/proximos-alertas`
-- `/condicoes` pagina de condicoes
+- `/rotacoes-semanais`
+- `/condicoes`
+- `/calculadora-hedge`
+
+Rotas API:
+- `POST /api/login`
+- `GET|POST|PUT|DELETE /api/houses`
+- `POST /api/change-password`
+- `GET|PUT /api/settings`
+- `GET|POST|DELETE /api/rotations`
 
 ## Notas de Avisos
 
 - Os avisos da app aparecem no painel automaticamente.
 - As notificacoes do browser precisam de permissao do utilizador (botao `Ativar Avisos`).
 - Em browser normal, as notificacoes sao disparadas quando a app esta aberta.
+

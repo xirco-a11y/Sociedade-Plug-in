@@ -21,6 +21,10 @@
       "destination": "/pages/proximos-alertas.html"
     },
     {
+      "source": "/rotacoes-semanais",
+      "destination": "/pages/rotacoes-semanais.html"
+    },
+    {
       "source": "/condicoes",
       "destination": "/pages/condicoes.html"
     },
