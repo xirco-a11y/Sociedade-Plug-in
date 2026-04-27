@@ -415,12 +415,13 @@
       saldoProtecoes += value;
     });
 
-    const prejuizoProtecoes = Math.max(0, -saldoProtecoes);
-
     return {
       lucroSociedade,
-      prejuizoProtecoes,
-      resultadoFinal: lucroSociedade - prejuizoProtecoes
+      // Mantemos o valor absoluto para apresentacao no card "Prejuizo com protecoes".
+      prejuizoProtecoes: Math.abs(saldoProtecoes),
+      saldoProtecoes,
+      // O resultado final deve considerar o saldo real das protecoes (lucro ou prejuizo).
+      resultadoFinal: lucroSociedade + saldoProtecoes
     };
   }
 
@@ -437,10 +438,10 @@
     if (statsWeekNetEl) statsWeekNetEl.textContent = formatMoney(weekStats.resultadoFinal);
 
     setToneClass(statsGlobalProfitEl, globalStats.lucroSociedade);
-    setToneClass(statsGlobalLossEl, -globalStats.prejuizoProtecoes);
+    setToneClass(statsGlobalLossEl, globalStats.saldoProtecoes);
     setToneClass(statsGlobalNetEl, globalStats.resultadoFinal);
     setToneClass(statsWeekProfitEl, weekStats.lucroSociedade);
-    setToneClass(statsWeekLossEl, -weekStats.prejuizoProtecoes);
+    setToneClass(statsWeekLossEl, weekStats.saldoProtecoes);
     setToneClass(statsWeekNetEl, weekStats.resultadoFinal);
   }
 
